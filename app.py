@@ -1,9 +1,10 @@
 import streamlit as st
+import easyocr
 import pdfplumber
 from PIL import Image
 import io
 from docx import Document
-import easyocr
+import numpy as np
 
 # Initialize EasyOCR reader
 reader = easyocr.Reader(['en'])
@@ -14,13 +15,15 @@ def extract_text_from_pdf(pdf_file):
     with pdfplumber.open(pdf_file) as pdf:
         for page in pdf.pages:
             pil_image = page.to_image(resolution=300).original
-            text += " ".join([result[1] for result in reader.readtext(pil_image)])
+            np_image = np.array(pil_image)  # Convert PIL image to NumPy array
+            text += " ".join([result[1] for result in reader.readtext(np_image)])
     return text
 
 # Function to extract text from an image file using EasyOCR
 def extract_text_from_image(image_file):
     pil_image = Image.open(image_file)
-    return " ".join([result[1] for result in reader.readtext(pil_image)])
+    np_image = np.array(pil_image)  # Convert PIL image to NumPy array
+    return " ".join([result[1] for result in reader.readtext(np_image)])
 
 # Function to save text to a .docx file
 def save_text_to_docx(text):
@@ -32,7 +35,7 @@ def save_text_to_docx(text):
     return byte_io
 
 # Streamlit app
-st.title("Document Extraction using EasyOCR")
+st.title("Document Extraction using FormNet")
 
 # Dropdown menu to choose between PDF and Image
 option = st.selectbox("Choose the file type", ["PDF", "Image"])
